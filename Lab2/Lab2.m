@@ -6,8 +6,11 @@
 % unauthorized persons outside of this course.
 
 clear all
+close all
+clc
+
 warning('off')
-[audio_in,audio_freq_samp] = audioread(['DreamOn_trimmed.m4a']);
+[audio_in,audio_freq_samp] = audioread(['mysong.m4a']);
 
 %ALLIGNING THE VALUES TO LENGTH OF AUDIO, AND DF IS THE MINIMUM FREQUENCY RANGE
 length_audio = length(audio_in);
@@ -49,8 +52,8 @@ val = abs(frequency_audio)<upper_threshold & abs(frequency_audio)>lower_threshol
 %distributed across both left and right speakers. Therefore, both
 %FFT_audio_in(:,1) and FFT_audio_in(:,2) contain frequency coefficients of
 %vocalist and instruments. 
-FFT_ins = FFT_audio_in(:,1);
-FFT_voc = FFT_audio_in(:,1); 
+FFT_ins = FFT_audio_in(:,2);
+FFT_voc = FFT_audio_in(:,2); 
 
 %BY THE LOGICAL ARRAY THE FOURIER IN FREQUENCY RANGE IS KEPT IN VOCALS;AND
 %REST IN INSTRUMENTAL AND REST OF THE VALUES TO ZERO
@@ -62,34 +65,33 @@ FFT_a = ifftshift(FFT_audio_in(:,1));
 FFT_music = ifftshift(FFT_ins);
 FFT_vocal = ifftshift(FFT_voc);
 
-
 %CREATING THE TIME DOMAIN SIGNAL
-music =real( ifft(FFT_music*length(FFT_music))); 
+music = real(ifft(FFT_music*length(FFT_music))); 
 vocal = real(ifft(FFT_vocal*length(FFT_vocal)));
-audio=ifft(FFT_a*length(FFT_a));
- 
+audio = ifft(FFT_a*length(FFT_a));
+
 %WRITING THE FILE
-audiowrite('sound.m4a',audio,audio_freq_samp);
-audiowrite('sound_music.m4a',music,audio_freq_samp);
-audiowrite('sound_voice.m4a',vocal,audio_freq_samp);
+audiowrite('./Lab2/sound.m4a',audio,audio_freq_samp);
+audiowrite('./Lab2/sound_music.m4a',music,audio_freq_samp);
+audiowrite('./Lab2/sound_voice.m4a',vocal,audio_freq_samp);
 
 %%%%Part 2
-FFT_ins_diff = FFT_audio_in(:,2)-FFT_audio_in(:,1); %FFT_vocal
-FFT_music_diff= ifftshift(FFT_ins_diff);
-music_diff = real(ifft(FFT_music_diff*length(FFT_music_diff)));
-audiowrite('sound_music_diff.m4a',music_diff,audio_freq_samp);
-
-%%%%Part 3
-music_centroid = spectralCentroid(music,audio_freq_samp);
-music_centroid_diff = spectralCentroid(music_diff,audio_freq_samp);
-vocal_centroid = spectralCentroid(vocal,audio_freq_samp);
-
-figure (2)
-subplot(3,1,1)
-t = linspace(0,size(music,1)/audio_freq_samp,size(music,1));
-plot(t,music)
-hold on
-plot(t,vocal)
+ FFT_ins_diff = FFT_audio_in(:,2)-FFT_audio_in(:,1); %FFT_vocal
+ FFT_music_diff= ifftshift(FFT_ins_diff);
+ music_diff = real(ifft(FFT_music_diff*length(FFT_music_diff)));
+ audiowrite('./Lab2/sound_music_diff.m4a',music_diff,audio_freq_samp);
+ 
+% %%%%Part 3
+ music_centroid = spectralCentroid(music,audio_freq_samp);
+ music_centroid_diff = spectralCentroid(music_diff,audio_freq_samp);
+ vocal_centroid = spectralCentroid(vocal,audio_freq_samp);
+ 
+ figure (2)
+ subplot(3,1,1)
+ t = linspace(0,size(music,1)/audio_freq_samp,size(music,1));
+ plot(t,music)
+ hold on
+ plot(t,vocal)
 legend('Music','Vocal')
 ylabel('Amplitude')
 
@@ -97,6 +99,7 @@ subplot(3,1,2)
 t = linspace(0,size(music,1)/audio_freq_samp,size(music_centroid,1));
 plot(t,music_centroid)
 hold on
+
 plot(t,vocal_centroid)
 legend('Music','Vocal')
 xlabel('Time (s)')
